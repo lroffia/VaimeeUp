@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="users">
+        <item>Luca</item>
+        <item>Tullio</item>
+        <item>Fabio</item>
+        <item>Paola</item>
+        <item>Attilio</item>
+        <item>Armando</item>
+        <item>Arrone</item>
+        <item>Marco</item>
+        <item>Aimone</item>
+        <item>Elena</item>
+        <item>Giulia</item>
+        <item>Nico</item>
+        <item>Paolo</item>
+        <item>Juha-Pekka</item>
+        <item>Kari</item>
+        <item>Markus</item>
+        <item>Jafar</item>
+    </string-array>
+</resources>
