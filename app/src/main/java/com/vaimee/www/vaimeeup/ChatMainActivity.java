@@ -1,5 +1,6 @@
 package com.vaimee.www.vaimeeup;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
@@ -33,13 +34,14 @@ public class ChatMainActivity extends Activity implements OnItemSelectedListener
 
     // Users
     private ArrayList<String> users = new ArrayList<>();
+    private Spinner usersSpinner;
+    private LoginActivity login = new LoginActivity();
 
     // Messages
     private ArrayList<Message> messages = new ArrayList<>();
     private MessageHandler messageHandler;
     private MessageArrayAdapter adapter;
 
-    Spinner spinnerR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,9 +80,9 @@ public class ChatMainActivity extends Activity implements OnItemSelectedListener
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.users, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerR = (Spinner) findViewById(R.id.receiver);
-        spinnerR.setAdapter(adapter);
-        spinnerR.setOnItemSelectedListener(this);
+        usersSpinner = (Spinner) findViewById(R.id.receiver);
+        usersSpinner.setAdapter(adapter);
+        usersSpinner.setOnItemSelectedListener(this);
 
         findViewById(R.id.sendButton).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -93,7 +95,15 @@ public class ChatMainActivity extends Activity implements OnItemSelectedListener
             }
         });
 
-        joinTheChat();
+        //joinTheChat();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        try {
+            intent.wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        sender = intent.getExtras().getString("userName");
     }
 
         private void joinTheChat() {

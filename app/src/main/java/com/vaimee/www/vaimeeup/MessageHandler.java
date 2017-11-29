@@ -88,8 +88,6 @@ public class MessageHandler extends Handler {
         post(new Runnable() {
             public void run() {
                 activity.findViewById(R.id.sendButton).setVisibility(View.VISIBLE);
-                activity.findViewById(R.id.chatButton).setVisibility(View.INVISIBLE);
-                activity.findViewById(R.id.sender).setEnabled(false);
             }
         });
     }
