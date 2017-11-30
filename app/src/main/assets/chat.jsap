@@ -1,6 +1,6 @@
 {
 	"parameters" : {
-		"host" : "wot.arces.unibo.it" ,
+		"host" : "10.0.2.2" ,
 		"ports" : {
 			"http" : 8000 ,
 			"https" : 8443 ,
@@ -93,7 +93,7 @@
 			}
 		},
 		"USERS" : {
-		"sparql" : "SELECT ?userName ?password WHERE {?user rdf:type chat:User ; chat:userName ?userName ; chat:password ?password}"
+		"sparql" : "SELECT ?userName WHERE {?user rdf:type chat:User ; chat:userName ?userName}"
 		}
 	}
 }

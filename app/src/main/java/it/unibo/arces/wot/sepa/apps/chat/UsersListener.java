@@ -16,10 +16,11 @@ import it.unibo.arces.wot.sepa.pattern.Consumer;
  * Created by luca on 19/11/17.
  */
 public class UsersListener extends Consumer {
-    private ChatListener listener;
+    private IUsersListener listener;
     private boolean joined;
+    ArrayList<String> users = new ArrayList<>();
 
-    public UsersListener(ApplicationProfile appProfile,ChatListener listener) throws SEPAProtocolException {
+    public UsersListener(ApplicationProfile appProfile,IUsersListener listener) throws SEPAProtocolException {
         super(appProfile, "USERS");
         this.listener = listener;
     }
@@ -32,11 +33,14 @@ public class UsersListener extends Consumer {
         joined = !ret.isError();
 
         if (joined) {
-            ArrayList<String> users = new ArrayList<>();
+            ArrayList<String> temp = new ArrayList<>();
             for (Bindings bindings : ((SubscribeResponse) ret).getBindingsResults().getBindings()) {
-                users.add(bindings.getBindingValue("userName"));
+                String userName = bindings.getBindingValue("userName");
+                if (users.contains(userName)) continue;
+                temp.add(userName);
+                users.add(userName);
             }
-            listener.onAddedUsers(users);
+            if (!temp.isEmpty()) listener.onAddedUsers(temp);
         }
 
         return joined;
@@ -57,22 +61,26 @@ public class UsersListener extends Consumer {
 
     @Override
     public void onAddedResults(BindingsResults results) {
-        ArrayList<String> users = new ArrayList<>();
-        for(Bindings bindings:results.getBindings()) {
+        ArrayList<String> temp = new ArrayList<>();
+        for (Bindings bindings : results.getBindings()) {
             String userName = bindings.getBindingValue("userName");
+            if (users.contains(userName)) continue;
+            temp.add(userName);
             users.add(userName);
         }
-        listener.onAddedUsers(users);
+        if (!temp.isEmpty()) listener.onAddedUsers(temp);
     }
 
     @Override
     public void onRemovedResults(BindingsResults results) {
-        ArrayList<String> users = new ArrayList<>();
-        for(Bindings bindings:results.getBindings()) {
+        ArrayList<String> temp = new ArrayList<>();
+        for (Bindings bindings : results.getBindings()) {
             String userName = bindings.getBindingValue("userName");
-            users.add(userName);
+            if (!users.contains(userName)) continue;
+            temp.add(userName);
+            users.remove(userName);
         }
-        listener.onRemovedUsers(users);
+        if (!temp.isEmpty()) listener.onRemovedUsers(temp);
     }
 
     @Override
@@ -83,7 +91,17 @@ public class UsersListener extends Consumer {
     @Override
     public void onBrokenSocket() {
         joined = false;
-        listener.onBrokenConnection();
+        new Thread() {
+            public void run() {
+                while(!joinChat()) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            }
+        }.start();
     }
 
     @Override

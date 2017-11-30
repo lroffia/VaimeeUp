@@ -76,10 +76,4 @@ public class Message {
     public void setReceived() {
         this.received = true;
     }
-
-	@Override
-	public boolean equals(Object o){
-		if (o.getClass().equals(Message.class)) return false;
-        return this.getTime().equals(((Message)o).getTime());
-	}
 }

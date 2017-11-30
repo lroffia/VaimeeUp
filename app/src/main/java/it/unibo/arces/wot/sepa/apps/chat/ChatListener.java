@@ -10,7 +10,4 @@ public interface ChatListener {
     void onMessageSent(Message message);
     void onMessageRead(Message message);
     void onBrokenConnection();
-
-    void onAddedUsers(ArrayList<String> users);
-    void onRemovedUsers(ArrayList<String> users);
 }

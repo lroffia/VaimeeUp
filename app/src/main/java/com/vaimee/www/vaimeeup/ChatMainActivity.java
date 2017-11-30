@@ -3,6 +3,8 @@ package com.vaimee.www.vaimeeup;
 import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -29,42 +31,35 @@ public class ChatMainActivity extends Activity implements OnItemSelectedListener
     private boolean joined = false;
 
     // Sender and receiver
-    private String sender = "Luca";
-    private String receiver = "Nino";
+    private String sender = null;
+    private String receiver = null;
 
     // Users
-    private ArrayList<String> users = new ArrayList<>();
     private Spinner usersSpinner;
-    private LoginActivity login = new LoginActivity();
 
     // Messages
     private ArrayList<Message> messages = new ArrayList<>();
     private MessageHandler messageHandler;
     private MessageArrayAdapter adapter;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_main);
 
+        // Message adapter
         adapter = new MessageArrayAdapter(this, R.layout.message, messages);
         ((ListView) findViewById(R.id.messagesList)).setAdapter(adapter);
         messageHandler = new MessageHandler(adapter,messages,this);
 
-        try {
-            appProfile = new ApplicationProfile(getAssets().open("chat.jsap"));
-        } catch (IOException | SEPAPropertiesException e) {
-            Log.d("FATAL", "Failed to load JSAP");
-            return;
-        }
-
+        // Clear message text on click
         findViewById(R.id.message).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 ((EditText) findViewById(R.id.message)).setText("");
             }
         });
 
+        // Send message button
         findViewById(R.id.sendButton).setVisibility(View.INVISIBLE);
         findViewById(R.id.sendButton).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -77,33 +72,26 @@ public class ChatMainActivity extends Activity implements OnItemSelectedListener
             }
         });
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.users, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Users (receivers)
         usersSpinner = (Spinner) findViewById(R.id.receiver);
-        usersSpinner.setAdapter(adapter);
+        usersSpinner.setAdapter(MainActivity.usersAdapter);
         usersSpinner.setOnItemSelectedListener(this);
 
-        findViewById(R.id.sendButton).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                new Thread() {
-                    public void run() {
-                        if (client.sendMessage(receiver, ((EditText) findViewById(R.id.message)).getText().toString()))
-                            messageHandler.sent();
-                    }
-                }.start();
-            }
-        });
-
-        //joinTheChat();
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
+        // Application profile
         try {
-            intent.wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            appProfile = new ApplicationProfile(getAssets().open("chat.jsap"));
+        } catch (IOException | SEPAPropertiesException e) {
+            Log.d("FATAL", "Failed to load JSAP");
+            return;
         }
-        sender = intent.getExtras().getString("userName");
+
+        // Get the username from the Login activity
+        Intent intent = getIntent();
+        sender = intent.getStringExtra(MainActivity.USER_EXTRA);
+
+        setTitle(getTitle()+" - "+sender);
+        // Create the chat client
+        joinTheChat();
     }
 
         private void joinTheChat() {
@@ -133,16 +121,6 @@ public class ChatMainActivity extends Activity implements OnItemSelectedListener
                             public void onBrokenConnection() {
                                 messageHandler.brokenConnection();
                                 joinTheChat();
-                            }
-
-                            @Override
-                            public void onAddedUsers(ArrayList<String> added) {
-                                users.addAll(added);
-                            }
-
-                            @Override
-                            public void onRemovedUsers(ArrayList<String> removed) {
-                                users.removeAll(removed);
                             }
                         };
                     while (!joined) {

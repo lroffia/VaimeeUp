@@ -29,37 +29,34 @@ public class MessageHandler extends Handler {
         this.activity = activity;
     }
 
-    public void messageRead(Message msg) {
+    private void onMessage(Message msg) {
         synchronized (messages) {
-            msg.setRead();
-            msg.setSent();
-            if (messages.contains(msg)) {
-                int index = messages.indexOf(msg);
-                messages.get(index).setRead();
+            if (msg.isReceived() || msg.isSent()) messages.add(msg);
+            else {
+                for (int i=messages.size()-1; i >= 0;i--) {
+                    if (messages.get(i).toString().equals(msg.toString())) {
+                        messages.get(i).setRead();
+                        break;
+                    }
+                }
             }
-            else messages.add(msg);
             post(new Runnable() {
                 public void run() {
                     adapter.notifyDataSetChanged();
                     ((ListView) activity.findViewById(R.id.messagesList)).setSelection(adapter.getCount() - 1);
                 }
             });
-            Log.d("READ", msg.toString());
         }
     }
 
+    public void messageRead(Message msg) {
+        msg.setRead();
+        onMessage(msg);
+    }
+
     public void messageReceived(Message msg) {
-        synchronized (messages) {
-            msg.setReceived();
-            messages.add(msg);
-            post(new Runnable() {
-                public void run() {
-                    adapter.notifyDataSetChanged();
-                    ((ListView) activity.findViewById(R.id.messagesList)).setSelection(adapter.getCount() - 1);
-                }
-            });
-            Log.d("RECEIVED", msg.toString());
-        }
+        msg.setReceived();
+        onMessage(msg);
     }
 
     public void brokenConnection(){
@@ -71,17 +68,8 @@ public class MessageHandler extends Handler {
     }
 
     public void messageSent(Message msg) {
-        synchronized (messages) {
-            msg.setSent();
-            messages.add(msg);
-            post(new Runnable() {
-                public void run() {
-                    adapter.notifyDataSetChanged();
-                    ((ListView) activity.findViewById(R.id.messagesList)).setSelection(adapter.getCount() - 1);
-                }
-            });
-            Log.d("SENT", msg.toString());
-        }
+        msg.setSent();
+       onMessage(msg);
     }
 
     public void joined() {
